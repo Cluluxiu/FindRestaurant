@@ -5,6 +5,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,8 @@ public class FindRestaurantExample {
 
     private static final String API_KEY = "xxxxxxxx"; //替换成你的API Key
     private static final String BASE_URL = "https://restapi.amap.com/v3/place/around";
+
+    private static boolean isUseDriveMiddle = true;
 
     public static void main(String[] args) throws IOException {
         OkHttpClient client = new OkHttpClient();
@@ -27,8 +30,11 @@ public class FindRestaurantExample {
         // 计算两个地点之间的距离
         double distance = calculateDistance(location1, location2);
 
+        // todo 中心点选择策略
         // 查找距离两个地点的中心点10公里范围内的餐厅
-        List<String> restaurants = searchRestaurants(getCenter(location1, location2), 5000);
+        String center = isUseDriveMiddle ? FindMiddlePointInDrive.findMiddlePoint() : getCenter(location1, location2);
+        // todo 餐厅按评分优先排序
+        List<String> restaurants = searchRestaurants(center, 5000);
 
         System.out.printf("距离两个地点之间的距离为：%.2f千米\n", distance / 1000);
         System.out.printf("在距离两个地点中心点5千米范围内，共找到%d家餐厅：\n", restaurants.size());
@@ -60,6 +66,7 @@ public class FindRestaurantExample {
      * 查找指定位置周围距离一定范围内的餐厅
      */
     private static List<String> searchRestaurants(String location, int radius) throws IOException {
+        System.out.println("middle location is " + location);
         List<String> result = new ArrayList<>();
         String url = BASE_URL + "?key=" + API_KEY + "&location=" + location + "&radius=" + radius + "&types=050000&offset=20&page=1&extensions=all";
 
