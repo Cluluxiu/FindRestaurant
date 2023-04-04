@@ -1,11 +1,13 @@
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.luchi.middleplace.center.FindMiddlePointInDrive;
+import com.luchi.middleplace.center.FindMiddlePointInLocation;
+import com.luchi.middleplace.constant.ApiConst;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,6 @@ import java.util.List;
 public class FindRestaurantExample {
 
     private static final String API_KEY = "xxxxxxxx"; //替换成你的API Key
-    private static final String BASE_URL = "https://restapi.amap.com/v3/place/around";
 
     private static boolean isUseDriveMiddle = true;
 
@@ -32,7 +33,7 @@ public class FindRestaurantExample {
 
         // todo 中心点选择策略
         // 查找距离两个地点的中心点10公里范围内的餐厅
-        String center = isUseDriveMiddle ? FindMiddlePointInDrive.findMiddlePoint() : getCenter(location1, location2);
+        String center = isUseDriveMiddle ? FindMiddlePointInDrive.findMiddlePoint() : FindMiddlePointInLocation.getCenter(location1, location2);
         // todo 餐厅按评分优先排序
         List<String> restaurants = searchRestaurants(center, 5000);
 
@@ -47,7 +48,7 @@ public class FindRestaurantExample {
      * 计算两个地点之间的距离（单位：米）
      */
     private static double calculateDistance(String location1, String location2) throws IOException {
-        String url = "https://restapi.amap.com/v3/distance?key=" + API_KEY + "&origins=" + location1 + "&destination=" + location2;
+        String url = ApiConst.DISTANCE_URL + "?key=" + API_KEY + "&origins=" + location1 + "&destination=" + location2;
 
         Request request = new Request.Builder()
                 .url(url)
@@ -68,7 +69,7 @@ public class FindRestaurantExample {
     private static List<String> searchRestaurants(String location, int radius) throws IOException {
         System.out.println("middle location is " + location);
         List<String> result = new ArrayList<>();
-        String url = BASE_URL + "?key=" + API_KEY + "&location=" + location + "&radius=" + radius + "&types=050000&offset=20&page=1&extensions=all";
+        String url = ApiConst.BASE_URL + "?key=" + API_KEY + "&location=" + location + "&radius=" + radius + "&types=050000&offset=20&page=1&extensions=all";
 
         Request request = new Request.Builder()
                 .url(url)
@@ -89,18 +90,4 @@ public class FindRestaurantExample {
         return result;
     }
 
-    /**
-     * 计算两个经纬度之间的中心点
-     */
-    private static String getCenter(String location1, String location2) {
-        double lat1 = Double.parseDouble(location1.split(",")[1]);
-        double lon1 = Double.parseDouble(location1.split(",")[0]);
-        double lat2 = Double.parseDouble(location2.split(",")[1]);
-        double lon2 = Double.parseDouble(location2.split(",")[0]);
-
-        double lat = (lat1 + lat2) / 2;
-        double lon = (lon1 + lon2) / 2;
-
-        return lon + "," + lat;
-    }
 }

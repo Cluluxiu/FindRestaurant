@@ -1,13 +1,11 @@
+package com.luchi.middleplace.center;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.luchi.middleplace.constant.ApiConst;
+import com.luchi.middleplace.util.HttpUtil;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,11 +26,11 @@ public class FindMiddlePointInDrive {
         String key = "xxxxxxxx"; // 高德地图API密钥
 
         // 第一步：使用高德地图API的路径规划功能，获取两个地点之间的驾车导航路线
-        String urlStr = "https://restapi.amap.com/v3/direction/driving?" +
-                "origin=" + URLEncoder.encode(origin) +
+        String urlStr = ApiConst.DRIVING_URL +
+                "?origin=" + URLEncoder.encode(origin) +
                 "&destination=" + URLEncoder.encode(destination)  + "&strategy=" + COST_FIRST +
                 "&key=" + key;
-        String result = sendGetRequest(urlStr);
+        String result = HttpUtil.sendGetRequest(urlStr);
         System.out.println(result);
 
         // 第二步：解析路径规划的结果，得到一条包含多个经纬度坐标点的路径
@@ -96,26 +94,6 @@ public class FindMiddlePointInDrive {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = earthRadius * c;
         return distance;
-    }
-
-    // 发送HTTP GET请求，并返回响应结果
-    public static String sendGetRequest(String urlStr) {
-        StringBuilder result = new StringBuilder();
-        try {
-            URL url = new URL(urlStr);
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line = "";
-            while ((line = reader.readLine()) != null) {
-                result.append(line);
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result.toString();
     }
 
     public static void main(String[] args) {
